@@ -1,0 +1,190 @@
+.Dd Feb 22, 2021
+.Dt lsws 1
+.Os
+.Sh NAME
+.Nm ls
+.Nd a simple wrapper for setting wallpapers.
+.Sh DESCRIPTION
+.Bl -tag -width indent
+.It Fl r
+Restore last wallpaper from ~/.lsws/logs/wallpaper_res_logs
+.Pp
+.It Fl w
+Set a random wallpaer
+.Pp
+.It Fl p Ar number
+Sets
+.Ar X
+wallpaper from end of ~/.lsws/logs/wallpaper_res_logs file.
+.Pp
+.It Fl n Ar number
+Sets
+.Ar X
+wallpaper from begin of ~/.lsws/logs/wallpaper_res_logs file.
+.Pp
+.It Fl l
+List of choosed wallpapers.
+.Pp
+.It Fl c
+Clean ~/.lsws/logs/wallpaper_res_logs
+.Pp
+.It Fl t Ar number
+Every
+.Ar X
+minutes change the wallpaer.
+.Pp
+.It Fl C
+Print wallpaper name.
+.Pp
+.It Fl s Ar /path/to/file.png
+Set custom wallpaper(read the
+.Cm NOTICE
+part for -s flag/operand.)
+.Pp
+.It Fl R Ar /path/to/wallpapers/
+Replace all space character of the wallpaper files to underline(_) characer in
+.Cm /path/to/wallpaper
+direcctory.
+.Pp
+.It Fl S Ar number
+Set seasonal wallpapers every
+.Cm X
+minutes. config file is ~/.lsws/config/Seasonal.defaults
+.Pp
+.Sh DESCRIPTION
+.Cm lsws
+has a config/options file in $HOME/.lsws/config/lsws.defaults, and should set like this:
+.Bl -bullet -compact
+.
+.It
+APP="hsetroot"
+.
+.It
+APP_FLAG="-cover"
+.
+.It
+DIRECTORY="$HOME/Wallpapers/"
+.
+.It
+IGNORE="pictrue.jpg"
+.
+.It
+KILL_REPITITIVE_PROC="n"
+.
+.It
+USE_SEASONAL="y"
+.
+.It
+VERBOSE_MODE="n"
+.
+.El
+.Pp
+the
+.Cm APP
+variable should be set your wallpaper setter tool(you can use
+.Cm feh
+or ...).
+.Pp
+the
+.Cm APP_FLAG
+variable should be set your wallpaper setter tool flag like
+.Pa hsetroot
+.Cm -cover
+.Pa one.jpg \.
+.Pp
+the
+.Cm DIRECTORY
+variable should be set with your wallpapers directory/address.
+.Pp
+the
+.Cm IGNORE
+variable is for passing a wallpaper, it means which wallpapaer name is in the
+.Cm IGNORE
+variable, does not set(separated with
+.Cm space
+).
+.Pp
+for example:
+.Bl -bullet -compact
+.
+.It
+IGNORE="one.jpg two.jpg"
+.
+.El
+.Pp
+the
+.Cm KILL_REPITITIVE_PROC
+variable should be set with y or n, when you use
+.Cm -s
+flag/operand; if value of variable is y,  script will find any process about to lsws and killing them with
+.Ar TERM
+signal, otherwise does not kill any process about lsws.
+.Pp
+the
+.Cm USE_SEASONAL
+variable should be set with y or n, if value of the variable is y; the seasonal feature will be working properly,  otherwise the seasonal feature does not work.
+.Pp
+for setting Seasonal wallpapers should be modify
+.Ar $HOME/.lsws/config/Seasonal.defaults
+like this:
+.Pp
+.Cm /home/user/Wallpapers/ 2021-03-13
+.Pp
+.Cm /home/user/Wallpapers2/ 2021-03-18
+.Pp
+on the above example, script will get the
+.Ar /home/user/Wallpapers/
+for setting wallpapers from this directory, and get the date/time in the second field of first line; and until system date and
+.Ar 2021-03-13
+are equal, script sets wallpaper from
+.Ar /home/user/Wallpapers/
+directory.
+.Pp
+the
+.Cm VERBOSE_MODE
+variable should be set with y or no, if value of the variable is y, script will be print something like wallpaper name or wallpapers directory, otherwise does not print anything.
+.Pp
+.Sh EXAMPLES
+.Pp
+.
+$ lsws -n 1
+.Pp
+$ lsws -t 3
+.Pp
+$ lsws -R /home/user/Wallpapers/
+.Pp
+the
+.Cm first
+command will set first wallpaper begin of $HOME/.lsws/logs/wallpaper_res_logs
+.Pp
+the
+.Cm second
+command will change the wallpaper every 3 minutes.
+.Pp
+the
+.Cm third
+command will replace all space characters of files with underline character in
+.Ar /home/user/Wallpapers/
+directory.
+.Pp
+.Sh NOTICE
+if you want to run
+.Cm lsws
+like other commands you can add
+.Cm lsws
+directory address to PATH variable, for example in bash shell:
+.Cm echo 'export PATH="/path/to/:$PATH"' >> ~/.bashrc
+.Pp
+the
+.Cm lsws
+script is in the /path/to/ directory(the lsws script need executable permission)\.
+.Pp
+if you want to use
+.Cm -s
+flag/operand, and your file has space in thier name, you should set it like this:
+.Pp
+$ lsws -s "/home/user/Wallpapers/best\\ nature\\ 2021.jpg"
+.Pp
+or you can use
+.Cm -R
+flag/operand for replacing spaces with underline.

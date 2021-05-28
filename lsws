@@ -1,0 +1,280 @@
+#!/bin/sh
+
+LSWS_DEFAULT_OPTIONS="$HOME/.lsws/config/lsws.defaults"
+WALLPAPER_NAME_ADDR="$HOME/.lsws/logs/current_wallpaper"
+WALLPAPER_LOGS="$HOME/.lsws/logs/wallpaper_logs"
+WALLPAPERS_RESTORE_LOGS="$HOME/.lsws/logs/wallpaper_res_logs"
+
+Restore(){
+	local OUTPUT=`cat "${WALLPAPERS_RESTORE_LOGS}" | tail -n 2 | head -n 1`
+	`$APP ${APP_FLAG} "${OUTPUT}" >> /dev/null ` && printf "${OUTPUT}\n" > "${WALLPAPER_NAME_ADDR}"
+}
+
+SecondRestore(){
+	local ONE="$1";local TWO="$2"
+	if [ "${ONE}" == "-p" ];then
+		local OUTPUT=`awk -v n=$TWO '{saved[NR % n] = $0} END{if (NR >= n) print saved[(NR + 1) % n]}' < "$WALLPAPERS_RESTORE_LOGS"`
+		`$APP $APP_FLAG "${OUTPUT}" > /dev/null ` && printf "${OUTPUT}\n" > "${WALLPAPER_NAME_ADDR}"
+		printf "\033[0;32m$OUTPUT\033[0m is the wallpaper.\n"
+	elif [ "${ONE}" == "-n" ];then
+		local OUTPUT=`cat "${WALLPAPERS_RESTORE_LOGS}" | awk "NR==$TWO {print }"`
+		`$APP $APP_FLAG "${OUTPUT}" > /dev/null ` && printf "${OUTPUT}\n" > "${WALLPAPER_NAME_ADDR}"
+		printf "\033[0;32m$OUTPUT\033[0m is the wallpaper.\n"
+	else
+		exit 1
+	fi
+}
+
+set_wallpaper(){
+	printf "DIRECTORY var: $DIRECTORY\n"
+	if [ "${DIRECTORY:-null}" == null ];then
+		#${DIRECTORY:-null} means if DIRECTORY was undefined, set it to null.
+		printf "\033[0;31mexited\033[0m\033[0;4m(DIRECTORY variable)\033[0m\n" && exit 1
+	elif [ "${IGNORE:-null}" == null ] && [ "${APP:-null}" != null ];then
+		printf "\033[0;32mpassed\033[0m\033[0;4m(IGNORE variable)\033[0m\n"
+	elif [ "${APP:-null}" == null ];then
+		printf "\033[0;31mexited\033[0m\033[0;4m(APP variable)\033[0m\n" && exit 1
+	fi
+	local WALLPAPERS_COUNT=`ls $DIRECTORY | wc -l`
+	local WALLPAPERS_COUNT=`printf $WALLPAPERS_COUNT  | sed "s/\ //g"`
+	local RAND=`printf " "| awk 'srand() {printf("%d%d\n", (300 * rand()) * 2, (300 * rand()) * 2 )}'`
+	local RAND_NUMBER=` expr $RAND % $WALLPAPERS_COUNT`
+	local COUNTER=0
+	IFS=$'\n'
+	for i in `ls ${DIRECTORY}`;do
+		if [ "$COUNTER" == "$RAND_NUMBER" ];then
+			local OUTPUT=`printf "$IGNORE" | grep -i "$i"`
+			if [ -n "$OUTPUT" ];then
+			printf "\n`date +%y/%m/%d-%H:%M:%S` <<this wallpaper passed: \033[0;36m${i}\033[0m \033[0;4m(because you were set it to IGNORE variable)>>\033[0m\n" >> "$WALLPAPER_LOGS"
+			printf "\033[0;32m\nwallpaper skipped: %s\n\033[0m" "$i"
+			continue
+			fi
+			printf "the \$IGNORE variable contents: ($IGNORE)\n"
+			printf "\nwallpaper: %s\n" "$i"
+			`$APP ${APP_FLAG} ${DIRECTORY}${i} >> "${WALLPAPER_LOGS}"`;printf "${DIRECTORY}${i}" > "${WALLPAPER_NAME_ADDR}"
+			printf "${DIRECTORY}${i}\n" >> "${WALLPAPERS_RESTORE_LOGS}"
+		fi
+		let COUNTER+=1 > /dev/null
+	done
+}
+
+SetCustomWallpaper(){
+	local IFS=$'\n'
+	local ARG="$1"
+	if [ -f "$ARG" ];then
+		`$APP ${APP_FLAG} "${ARG}" >> "${WALLPAPER_LOGS}"`;printf "${ARG}" > "${WALLPAPER_NAME_ADDR}"
+		printf "${ARG}\n" >> "${WALLPAPERS_RESTORE_LOGS}"
+		if [ "$KILL_REPITITIVE_PROC" == "y" ];then
+			kill -s TERM `pgrep -f lsws` 2> /dev/null
+			if [ "$?" != 0 ];then
+				clear
+				# \b is a backspace
+				printf "\033[0;32mCan not killed process/processes.\n\033[0m \bmaybe is not any process works.\n"
+			fi
+			`$APP $APP_FLAG "$ARG" >> "${WALLPAPER_LOGS}"`;printf "${ARG}" > "${WALLPAPER_NAME_ADDR}"
+			printf "${ARG}\n" >> "${WALLPAPERS_RESTORE_LOGS}"
+		elif [ "$KILL_REPITITIVE_PROC" == "n" ];then
+			`$APP $APP_FLAG "$ARG" >> "${WALLPAPER_LOGS}"`;printf "${ARG}" > "${WALLPAPER_NAME_ADDR}"
+			printf "${ARG}\n" >> "${WALLPAPERS_RESTORE_LOGS}"
+		else
+			printf "the KILL_REPITITIVE_PROC variable is not set correctly.\nLook at ~/.lsws/config/lsws.defaults file.\n"
+			exit 1;
+		fi
+	else
+		printf "${ARG} does not exist;or maybe file has space character, read the man page: \033[0;4m\$ man 1 lsws\033[0m\n"
+	fi
+	unset IFS
+}
+
+Replacer(){
+	local DIR="$1"
+	local DEFAULT_SEP="$2"
+	CHECK_TEMP=`printf "$DIR" | grep "\/$"`
+	test "$?" != 0 && DIR="$DIR/"
+	printf "dir: $DIR\nDefault: $DEFAULT_SEP\n"
+	if [ -d "$DIR" ];then
+		IFS=$'\n'
+		for i in `ls "${DIR}"`;do
+			CHECK=`echo "${i}" | grep "\ " `
+			if [ "$?" == 0 ];then
+				CHNAME=`printf "$i" | tr "\ " "$DEFAULT_SEP"`
+				mv -v "${DIR}${i}" "${DIR}${CHNAME}"
+			else
+				:
+			fi
+		done
+	fi
+	unset IFS
+}
+
+Seasonal(){
+	case "$USE_SEASONAL" in
+		[Nn][Oo]|n|N)
+			printf "Check USE_SEASONAL variable value in $HOME/.lsws/config/lsws.defaults\n" > "$HOME/.lsws/logs/Seasonal_error"
+			exit 1;
+			;;
+	esac
+	local SLEEP_TIME_INPUT="$1"
+	local SLEEP_TIME_INPUT=`expr "$SLEEP_TIME_INPUT" \* 60 `
+	DIRECTORY="$HOME/.lsws/config/Seasonal.defaults"
+	DIRECTORY_SELECT=`cat "$DIRECTORY" | awk 'NR==1 {print $1}'`
+	WCOUTPUT=`wc -l "$DIRECTORY" | awk '{print $1}'`
+	CHECK_FOR_SLASH=`printf "$DIRECTORY_SELECT" | grep "\/$"`
+	test "$?" == 1 && local DIRECTORY_SELECT="${DIRECTORY_SELECT}/"
+	while [ "$WCOUTPUT" !=  0 ];do
+		DIRECTORY_SELECT=`cat "$DIRECTORY" | awk 'NR==1 {print $1}'`
+		test "$VERBOSE_MODE" == "y" && printf "Wallpapers Directory: \033[0;33m$DIRECTORY_SELECT\n\033[0m"
+		WCOUTPUT=`wc -l $DIRECTORY | awk '{print $1}'`
+		DATE_SELECT=`awk '{print $2}' "$DIRECTORY" | head -n 1`
+		FIRST_LINE=`cat $DIRECTORY | head -n 1`
+		test "$VERBOSE_MODE" == "y" && printf "$HOME/.lsws/config/Seasonal.defaults lines count: \033[0;32m$WCOUTPUT\n\033[0m"
+		test "$VERBOSE_MODE" == "y" && printf "Date in File: \033[0;34m$DATE_SELECT\n\033[0m"
+		test "$VERBOSE_MODE" == "y" && printf "Selected Directory: \033[0;33m "${DIRECTORY_SELECT}"\033[0m\n"
+		SYSTEM_DATE=`date +%F`
+		DATE_SELECT_TEMP=`printf "$DATE_SELECT" | sed "s/\-//g"`
+		SYSTEM_DATE_TEMP=`printf "$SYSTEM_DATE" | sed "s/\-//g"`
+		if [ -n "$DATE_SELECT_TEMP" ];then
+			if [ "$DATE_SELECT_TEMP" -lt "$SYSTEM_DATE_TEMP" ];then
+				printf "Entered time is little than system time.\n" > $HOME/.lsws/logs/Seasonal_error
+				exit 1
+			fi
+		fi
+		if [ "$WCOUTPUT" != 0 ];then
+			until [ "$SYSTEM_DATE_TEMP" == "$DATE_SELECT_TEMP" ];do
+				SYSTEM_DATE=`date +%F`
+				SYSTEM_DATE_TEMP=`printf "$SYSTEM_DATE" | sed "s/\-//g"`
+				sleep 5
+				test "$VERBOSE_MODE" && \
+					printf "System Date: \033[0;34m$SYSTEM_DATE\n\033[0mDate in File: \033[0;34m$DATE_SELECT\n\033[0m"
+			done
+			sleep 3;clear
+		fi
+		unset SYSTEM_DATE_TEMP DATE_SELECT_TEMP
+		test "$VERBOSE_MODE" == "y" && printf "Wallpapers Directory: \033[0;33m$DIRECTORY_SELECT\n\033[0m"
+		DIRECTORY_SELECT=`cat "$DIRECTORY" | awk 'NR==1 {print $1}'`
+		while [  "${SYSTEM_DATE}" == "${DATE_SELECT}" ];do
+			DIRECTORY_SELECT=`cat "$DIRECTORY" | awk 'NR==1 {print $1}'`
+			SYSTEM_DATE=`date +%F`
+			sleep $SLEEP_TIME_INPUT
+			WALLPAPERS_COUNT=`ls $DIRECTORY_SELECT | wc -l`
+			test "$VERBOSE_MODE" == "y" && printf "wallpapers count in directory: \033[0;33m$WALLPAPERS_COUNT\n\033[0m"
+			WALLPAPERS_COUNT=`printf $WALLPAPERS_COUNT  | sed "s/\ //g"`
+			RAND_NUMBER=`printf " "| awk 'srand() {printf("%d%d\n", (300 * rand()) * 2, (300 * rand()) * 2 )}'`
+			RAND_NUMBER=` expr $RAND_NUMBER % $WALLPAPERS_COUNT`
+			COUNTER=0
+			FIRST_LINE=`cat "$DIRECTORY" | head -n 1`
+			IFS=$'\n'
+			for i in `ls ${DIRECTORY_SELECT}`;do
+				if [ "$COUNTER" == "$RAND_NUMBER" ];then
+					test "$VERBOSE_MODE" == "y" && \
+						printf "Wallpaper: \033[0;35m${i}\033[0m\n"
+					`$APP ${APP_FLAG} ${DIRECTORY_SELECT}${i} >> "${WALLPAPER_LOGS}"`
+					printf "${DIRECTORY_SELECT}${i}" > "${WALLPAPER_NAME_ADDR}"
+					printf "${DIRECTORY_SELECT}${i}\n" >> "${WALLPAPERS_RESTORE_LOGS}"
+				fi
+				let COUNTER+=1 > /dev/null
+			done
+		done
+		printf "Removing: $DIRECTORY_SELECT\n"
+		TEMP=`grep -v "$FIRST_LINE" "$DIRECTORY"`
+		TEMP=`printf "$TEMP" > $DIRECTORY`
+		if [ ! -z "$TEMP" ];then
+			test "$VERBOSE_MODE" == "y" &&  printf "$HOME/.lsws/configs/Seasonal.defaults contents: \033[0;32m$TEMP\n\033[0m"
+		fi
+	done
+}
+
+TEMP=`getopt "rwhp:n:lct:Cs:R:S:" "$*"`
+if [ $? -ne 0 ];then
+	printf "\033[0;31mTerminating...\n\033[0m"
+	exit 1
+fi
+if [ -e "$LSWS_DEFAULT_OPTIONS" ];then
+	. "$LSWS_DEFAULT_OPTIONS"
+fi
+eval set -- "$TEMP"
+unset TEMP
+while [ true ];do
+	case "$1" in
+		'-r')
+			Restore
+			break
+			;;
+		'-w')
+			set_wallpaper
+			break
+			;;
+		'-p')
+			NUMBER="$2"
+			ARG="$1"
+			SecondRestore ${ARG} ${NUMBER}
+			break
+			;;
+		'-n')
+			NUMBER="$2"
+			ARG="$1"
+			SecondRestore ${ARG} ${NUMBER}
+			break
+			;;
+		'-l')
+			OUTPUT=`cat ${WALLPAPERS_RESTORE_LOGS}`
+			printf "last set wallpapers: \n\033[5;31m${OUTPUT}\n\033[0m"
+			break
+			;;
+		'-c')
+			cat /dev/null > "${WALLPAPERS_RESTORE_LOGS}"
+			printf "done.\n"
+			break
+			;;
+		'-t')
+			TIME=`expr $2 \* 60`
+			while [ true ];do
+				set_wallpaper
+				sleep $TIME
+			done
+
+			break
+			;;
+		'-C')
+			OUTPUT=`cat $WALLPAPER_NAME_ADDR`
+			printf "\033[0;33m${OUTPUT}\033[0m\n"
+			break
+			;;
+		'-s')
+			ARG="$2"
+			SetCustomWallpaper "$ARG"
+			break
+			;;
+		'-R')
+			DIR_INPUT="$2"
+			name="$3"
+			if [ -z "$name" ];then
+				name="_"
+			elif [ "$name" == '--' ];then
+				name="_"
+			fi
+			Replacer $DIR_INPUT $name
+			break
+			;;
+		'-S')
+			Seasonal "$2"
+			break
+			;;
+
+		'-h')
+                        printf "Usage: lsws OPTION\nRead lsws(1) for more information.\n"
+			break
+			;;
+		'--')
+			shift
+			break
+			;;
+		*)
+			printf "Internal error.\n"
+			exit 1
+			;;
+	esac
+done
+if [ -z "$1" ];then
+	printf "lsws: missing operand\nTry 'lsws -h' for more information.\n"
+fi

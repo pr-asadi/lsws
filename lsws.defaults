@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Default wallpapers directory
+DIRECTORY="$HOME/Wallpapers/"
+
+# Default program to set background
+APP="hsetroot"
+APP_FLAG="-cover"
+
+# Exclude certain wallpapers
+IGNORE=""
+
+# Kill any lsws process when use ls with -s operand for setting custom wallpaper
+KILL_REPITITIVE_PROC="n"
+
+#Use Seasonal feature
+USE_SEASONAL="y"
+
+VERBOSE_MODE="y"
