@@ -1,5 +1,5 @@
 # lsws
-A simple wrapper for setting background with wallpaper setter tools.
+a simple wrapper for setting background with wallpaper setter tools.
 
 ## Features
 - Set wallpaper every X minutes

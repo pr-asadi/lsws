@@ -1,8 +1,8 @@
 #!/bin/sh
 USERNAME=`logname`
-mkdir -p -v "/home/$USERNAME/.lsws/" "/home/$USERNAME/.lsws/config/" "/home/$USERNAME/.lsws/logs/"
 UID_TEMP=`id -u $USER`
 if [ "$UID_TEMP" == 0 ];then
+	mkdir -p -v "/home/$USERNAME/.lsws/" "/home/$USERNAME/.lsws/config/" "/home/$USERNAME/.lsws/logs/"
 	if [ ! -e /usr/local/man/man1/ ];then
 		mkdir -v /usr/local/man/man1/
 	fi
@@ -14,4 +14,6 @@ if [ "$UID_TEMP" == 0 ];then
 		mv -v ./Seasonal.defaults "/home/${USERNAME}/.lsws/config/"
 		chown -R $USERNAME /home/${USERNAME}/.lsws
 	fi
+else
+	printf "\033[0;31m This script should run with root privilege\033[0m\n"
 fi
