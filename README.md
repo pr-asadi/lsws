@@ -24,3 +24,9 @@ To use `lsws`, you may want to change `~/.lsws/lsws.defaults` variables:
 ```
 $ man 1 lsws
 ```
+
+## Uninstallation
+```
+$ cd lsws
+$ sudo sh uninstall.sh
+```
