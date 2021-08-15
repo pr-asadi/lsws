@@ -52,7 +52,7 @@ set_wallpaper(){
 			printf "the \$IGNORE variable contents: ($IGNORE)\n"
 			printf "\nwallpaper: %s\n" "$i"
 			`$APP ${APP_FLAG} ${DIRECTORY}${i} >> "${WALLPAPER_LOGS}"`;printf "${DIRECTORY}${i}" > "${WALLPAPER_NAME_ADDR}"
-			printf "${DIRECTORY}${i}\n" >> "${WALLPAPERS_RESTORE_LOGS}"
+			printf "${DIRECTORY}${i} $(date +%Y-%B-%d)\n" >> "${WALLPAPERS_RESTORE_LOGS}"
 		fi
 		let COUNTER+=1 > /dev/null
 	done
@@ -63,7 +63,7 @@ SetCustomWallpaper(){
 	local ARG="$1"
 	if [ -f "$ARG" ];then
 		`$APP ${APP_FLAG} "${ARG}" >> "${WALLPAPER_LOGS}"`;printf "${ARG}" > "${WALLPAPER_NAME_ADDR}"
-		printf "${ARG}\n" >> "${WALLPAPERS_RESTORE_LOGS}"
+		printf "${ARG} $(date +%Y-%B-%d)\n" >> "${WALLPAPERS_RESTORE_LOGS}"
 		if [ "$KILL_REPITITIVE_PROC" == "y" ];then
 			kill -s TERM `pgrep -f lsws` 2> /dev/null
 			if [ "$?" != 0 ];then
@@ -72,10 +72,10 @@ SetCustomWallpaper(){
 				printf "\033[0;32mCan not killed process/processes.\n\033[0m \bmaybe is not any process works.\n"
 			fi
 			`$APP $APP_FLAG "$ARG" >> "${WALLPAPER_LOGS}"`;printf "${ARG}" > "${WALLPAPER_NAME_ADDR}"
-			printf "${ARG}\n" >> "${WALLPAPERS_RESTORE_LOGS}"
+			printf "${ARG} $(date +%Y-%B-%d)\n" >> "${WALLPAPERS_RESTORE_LOGS}"
 		elif [ "$KILL_REPITITIVE_PROC" == "n" ];then
 			`$APP $APP_FLAG "$ARG" >> "${WALLPAPER_LOGS}"`;printf "${ARG}" > "${WALLPAPER_NAME_ADDR}"
-			printf "${ARG}\n" >> "${WALLPAPERS_RESTORE_LOGS}"
+			printf "${ARG} $(date +%Y-%B-%d)\n" >> "${WALLPAPERS_RESTORE_LOGS}"
 		else
 			printf "the KILL_REPITITIVE_PROC variable is not set correctly.\nLook at ~/.lsws/config/lsws.defaults file.\n"
 			exit 1;
@@ -170,7 +170,7 @@ Seasonal(){
 						printf "Wallpaper: \033[0;35m${i}\033[0m\n"
 					`$APP ${APP_FLAG} ${DIRECTORY_SELECT}${i} >> "${WALLPAPER_LOGS}"`
 					printf "${DIRECTORY_SELECT}${i}" > "${WALLPAPER_NAME_ADDR}"
-					printf "${DIRECTORY_SELECT}${i}\n" >> "${WALLPAPERS_RESTORE_LOGS}"
+					printf "${DIRECTORY_SELECT}${i} $(date +%Y-%B-%d)\n" >> "${WALLPAPERS_RESTORE_LOGS}"
 				fi
 				let COUNTER+=1 > /dev/null
 			done
@@ -218,7 +218,7 @@ while [ true ];do
 			;;
 		'-l')
 			OUTPUT=`cat ${WALLPAPERS_RESTORE_LOGS}`
-			printf "last set wallpapers: \n\033[5;31m${OUTPUT}\n\033[0m"
+			printf "last set wallpapers: \n\033[0;31m${OUTPUT}\n\033[0m"
 			break
 			;;
 		'-c')
