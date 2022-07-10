@@ -1,8 +1,8 @@
-.Dd Feb 22, 2021
+.Dd Jul 10, 2022
 .Dt lsws 1
 .Os
 .Sh NAME
-.Nm ls
+.Nm lsws
 .Nd a simple wrapper for setting wallpapers.
 .Sh DESCRIPTION
 .Bl -tag -width indent
@@ -14,16 +14,16 @@ Set a random wallpaer
 .Pp
 .It Fl p Ar number
 Sets
-.Ar X
+.Ar nth
 wallpaper from end of ~/.lsws/logs/wallpaper_res_logs file.
 .Pp
 .It Fl n Ar number
 Sets
-.Ar X
+.Ar nth
 wallpaper from begin of ~/.lsws/logs/wallpaper_res_logs file.
 .Pp
 .It Fl l
-List of choosed wallpapers.
+List of the chosen wallpapers.
 .Pp
 .It Fl c
 Clean ~/.lsws/logs/wallpaper_res_logs
@@ -39,12 +39,13 @@ Print wallpaper name.
 .It Fl s Ar /path/to/file.png
 Set custom wallpaper(read the
 .Cm NOTICE
-part for -s flag/operand.)
+part for -s flag/operand)
 .Pp
 .It Fl R Ar /path/to/wallpapers/
-Replace all space character of the wallpaper files to underline(_) characer in
+Replace all space characters of the wallpaper files to underline(_) character
+under
 .Cm /path/to/wallpaper
-direcctory.
+directory.
 .Pp
 .It Fl S Ar number
 Set seasonal wallpapers every
@@ -53,7 +54,8 @@ minutes. config file is ~/.lsws/config/Seasonal.defaults
 .Pp
 .Sh DESCRIPTION
 .Cm lsws
-has a config/options file in $HOME/.lsws/config/lsws.defaults, and should set like this:
+has a config/options file in $HOME/.lsws/config/lsws.defaults, and should be
+like this:
 .Bl -bullet -compact
 .
 .It
@@ -81,26 +83,27 @@ VERBOSE_MODE="n"
 .Pp
 the
 .Cm APP
-variable should be set your wallpaper setter tool(you can use
+variable's value should be your wallpaper setter tool(you can use
 .Cm feh
 or ...).
 .Pp
 the
 .Cm APP_FLAG
-variable should be set your wallpaper setter tool flag like
+variable's value should be your wallpaper setter tool flag like
 .Pa hsetroot
 .Cm -cover
 .Pa one.jpg \.
 .Pp
 the
 .Cm DIRECTORY
-variable should be set with your wallpapers directory/address.
+variable's value should be your wallpapers directory/address.
 .Pp
 the
 .Cm IGNORE
-variable is for passing a wallpaper, it means which wallpapaer name is in the
+variable is for passing/ignoring a wallpaper, it means the wallpapaer name
+which is in the
 .Cm IGNORE
-variable, does not set(separated with
+variable, won't be set(separated with
 .Cm space
 ).
 .Pp
@@ -114,17 +117,20 @@ IGNORE="one.jpg two.jpg"
 .Pp
 the
 .Cm KILL_REPITITIVE_PROC
-variable should be set with y or n, when you use
+variable should be set to y or n, when you use
 .Cm -s
-flag/operand; if value of variable is y,  script will find any process about to lsws and killing them with
+flag/operand; if the value of the variable is y,  script will find any
+process/process about to lsws and will kill(1) them with
 .Ar TERM
-signal, otherwise does not kill any process about lsws.
+signal, otherwise it won't kill any process/processes about lsws.
 .Pp
 the
 .Cm USE_SEASONAL
-variable should be set with y or n, if value of the variable is y; the seasonal feature will be working properly,  otherwise the seasonal feature does not work.
+variable should be set to y or n, if the value of the variable is y, the
+seasonal feature will be working properly,  otherwise the seasonal feature
+will not work.
 .Pp
-for setting Seasonal wallpapers should be modify
+for setting Seasonal wallpapers you should modify the following file
 .Ar $HOME/.lsws/config/Seasonal.defaults
 like this:
 .Pp
@@ -132,9 +138,10 @@ like this:
 .Pp
 .Cm /home/user/Wallpapers2/ 2021-03-18
 .Pp
-on the above example, script will get the
+in the above example, script will get the
 .Ar /home/user/Wallpapers/
-for setting wallpapers from this directory, and get the date/time in the second field of first line; and until system date and
+directory for setting wallpapers from it, and get the date/time in the second field of first line. And until
+system's date and
 .Ar 2021-03-13
 are equal, script sets wallpaper from
 .Ar /home/user/Wallpapers/
@@ -142,7 +149,8 @@ directory.
 .Pp
 the
 .Cm VERBOSE_MODE
-variable should be set with y or no, if value of the variable is y, script will be print something like wallpaper name or wallpapers directory, otherwise does not print anything.
+variable should be set to y or n, if value of the variable is y, script will
+print something like wallpaper name or wallpapers directory, otherwise will not print anything.
 .Pp
 .Sh EXAMPLES
 .Pp
@@ -155,7 +163,8 @@ $ lsws -R /home/user/Wallpapers/
 .Pp
 the
 .Cm first
-command will set first wallpaper begin of $HOME/.lsws/logs/wallpaper_res_logs
+command will set the first wallpaper from beginning of
+$HOME/.lsws/logs/wallpaper_res_logs file.
 .Pp
 the
 .Cm second
@@ -164,27 +173,31 @@ command will change the wallpaper every 3 minutes.
 the
 .Cm third
 command will replace all space characters of files with underline character in
+the
 .Ar /home/user/Wallpapers/
 directory.
 .Pp
 .Sh NOTICE
 if you want to run
 .Cm lsws
-like other commands you can add
+like other commands you should add
 .Cm lsws
 directory address to PATH variable, for example in bash shell:
 .Cm echo 'export PATH="/path/to/:$PATH"' >> ~/.bashrc
 .Pp
 the
 .Cm lsws
-script is in the /path/to/ directory(the lsws script need executable permission)\.
+directory can be the /path/to/ directory
+just replace the "/path/to" with your own lsws directory.
+in this case, the lsws script needs executable permission!
 .Pp
 if you want to use
 .Cm -s
-flag/operand, and your file has space in thier name, you should set it like this:
+flag/operand, and your file has space in its name, you should use it like this:
 .Pp
 $ lsws -s "/home/user/Wallpapers/best\\ nature\\ 2021.jpg"
 .Pp
 or you can use
 .Cm -R
 flag/operand for replacing spaces with underline.
+
