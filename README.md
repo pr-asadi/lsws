@@ -1,5 +1,5 @@
 # lsws
-a simple wrapper for setting background with wallpaper setter tools.
+a simple wrapper for setting wallpaper with wallpaper setter tool.
 
 ## Features
 - Set wallpaper every X minutes
@@ -9,9 +9,17 @@ a simple wrapper for setting background with wallpaper setter tools.
 
 ## Installation
 ```
-$ git clone https://github.com/Dark-Rail/lsws.git
+$ git clone https://github.com/pr-asadi/lsws.git
 $ cd lsws
-$ sudo sh setup.sh
+$ sh setup.sh
+```
+To install man page, execute:
+```
+$ sudo sh setup.sh -m
+```
+And for help:
+```
+$ sh setup.sh -h
 ```
 
 ## Configuration

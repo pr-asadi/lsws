@@ -1,9 +1,10 @@
 #!/bin/sh
 #
 # vim: tabstop=8 indentwidth=8 softtab=8 columns=80
-# kak: tabstop=8 indentwidth=0 autowrap_column=78
-# If you use Kakoune, you need to run `autowrap-enable' command.
-#
+# kak: tabstop=8 indentwidth=0 autowrap_column=88
+# 
+# If you use Kakoune, you need to run `modeline-parse' and '`autowrap-enable'
+# commands.
 
 LSWS_DEFAULT_OPTIONS="$HOME/.lsws/config/lsws.defaults"
 WALLPAPER_NAME="$HOME/.lsws/logs/current_wallpaper"
@@ -27,8 +28,8 @@ restore() {
 }
 
 secondrestore() {
-	echo kkeke
-	local ONE="$1";local TWO="$2"
+	local FLAG="$1"
+	local PIC="$2"
 
 	if [ -z "$(cat "$WALLPAPERS_RESTORE_LOGS")" ]; then
 		printf "${RED}%s${RESET}\n" \
@@ -38,8 +39,8 @@ secondrestore() {
 	fi
 
 	
-	if [ "${ONE}" = "-p" ]; then
-		local OUTPUT=$(awk -v n=$TWO \
+	if [ "${FLAG}" = "-p" ]; then
+		local OUTPUT=$(awk -v n=$PIC \
 			'{saved[NR % n] = $1} END{if (NR >= n) print saved[(NR + 1) % n]}' < "$WALLPAPERS_RESTORE_LOGS")
 			printf "$OUTPUT"
 
@@ -48,8 +49,8 @@ secondrestore() {
 
 		printf "${GREEN}${OUTPUT}${RESET} is the wallpaper.\n"
 
-	elif [ "${ONE}" = "-n" ]; then
-		local OUTPUT=$(awk -v n=$TWO 'NR==n {print $1}' < "${WALLPAPERS_RESTORE_LOGS}")
+	elif [ "${FLAG}" = "-n" ]; then
+		local OUTPUT=$(awk -v n=$PIC 'NR==n {print $1}' < "${WALLPAPERS_RESTORE_LOGS}")
 		$APP $APP_FLAG "${OUTPUT}" > /dev/null && \
 			printf "${OUTPUT}\n" > "${WALLPAPER_NAME}"
 
@@ -163,7 +164,7 @@ replacer() {
 
 		for i in $(ls "${DIR}");do
 
-			CHECK=$(echo "${i}" | grep "\ " )
+			CHECK=$(printf "%s" "${i}" | grep "\ " )
 
 			if [ "$?" = 0 ]; then
 				CHNAME=$(printf "$i" | tr "\ " "$DEFAULT_SEP")
